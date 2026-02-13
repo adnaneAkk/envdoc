@@ -5,5 +5,5 @@ plants.txt
 # Optional: Go build files
 *.exe
 *.out
-
+*.mod
 *.txt
