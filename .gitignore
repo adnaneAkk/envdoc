@@ -1,0 +1,9 @@
+# Ignore environment and text files
+.env
+plants.txt
+
+# Optional: Go build files
+*.exe
+*.out
+
+*.txt

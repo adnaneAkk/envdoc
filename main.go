@@ -10,10 +10,6 @@ import (
 	"strings"
 )
 
-type Config struct {
-	Strict bool
-}
-
 func main() {
 
 	strictFlag := flag.Bool("strict", false, "enable strict mode")
@@ -21,7 +17,6 @@ func main() {
 	config := Config{
 		Strict: *strictFlag,
 	}
-	print(config)
 
 	kvMap := make(map[string]string)
 	file, err := os.Open(".env")
@@ -35,20 +30,24 @@ func main() {
 	for scanner.Scan() {
 		lineNum++
 		line := scanner.Text()
-		k, v, err := parseLine(line, lineNum)
+
+		// syntax check
+		k, v, err := parseLine(line, lineNum, config)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err, v)
+			break
 		}
+
 		// skip comments or empty lines
 		if k == "" {
 			continue
-		}
-
-		// detecting duplicate keys
-		if _, exists := kvMap[k]; exists {
-			fmt.Printf("duplicate key in line %d\n", lineNum)
 		} else {
-			kvMap[k] = v
+			// // detecting duplicate keys
+			// if _, exists := kvMap[k]; exists {
+			// 	fmt.Printf("duplicate key in line %d\n", lineNum)
+			// } else {
+			// 	kvMap[k] = v
+			// }
 		}
 
 		// fmt.Println("_____________")
@@ -62,7 +61,7 @@ func main() {
 	}
 }
 
-func parseLine(line string, lineNum int) (string, string, error) {
+func parseLine(line string, lineNum int, cfg Config) (string, string, error) {
 
 	line = strings.TrimSpace(line)
 	if len(line) == 0 {
@@ -85,7 +84,7 @@ func parseLine(line string, lineNum int) (string, string, error) {
 	slice := strings.SplitN(line, "=", 2)
 
 	// checks the structural format of keys
-	k, v, err := checkAfterSplit(slice, lineNum)
+	k, v, err := checkAfterSplit(slice, lineNum, cfg)
 	if err != nil {
 		return "", "", err
 	}
@@ -93,7 +92,7 @@ func parseLine(line string, lineNum int) (string, string, error) {
 	return k, v, nil
 }
 
-func checkAfterSplit(slice []string, lineNum int) (string, string, error) {
+func checkAfterSplit(slice []string, lineNum int, cfg Config) (string, string, error) {
 	key := string(slice[0])
 	value := string(slice[1])
 
@@ -107,17 +106,20 @@ func checkAfterSplit(slice []string, lineNum int) (string, string, error) {
 	key = strings.TrimSpace(key)
 	value = strings.TrimSpace(value)
 
-	isCleaKey, err := KeyRegex(key)
-	if err != nil || !isCleaKey {
-		return "", "", fmt.Errorf("key does not respect naming format on line %d", lineNum)
+	if cfg.Strict {
+		isCleaKey, err := StrictKeyRegex(key)
+		if err != nil || !isCleaKey {
+			return "", "", fmt.Errorf("key does not respect naming format on line %d", lineNum)
+		}
+
 	}
 
 	return key, value, nil
 }
 
-func KeyRegex(word string) (bool, error) {
+func StrictKeyRegex(word string) (bool, error) {
 
-	matched, err := regexp.MatchString("^[A-Za-z_][A-Za-z0-9_]*$", word)
+	matched, err := regexp.MatchString("^[A-Z_][A-Z0-9_]*$", word)
 	if err != nil {
 		return true, err
 	}
