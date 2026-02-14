@@ -2,10 +2,11 @@ package schema
 
 import (
 	"encoding/json"
-	"envdoc/internal/types"
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/adnaneAkk/envdoc/internal/types"
 
 	"gopkg.in/yaml.v3"
 )

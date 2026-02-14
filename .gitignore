@@ -5,8 +5,7 @@ plants.txt
 # Optional: Go build files
 *.exe
 *.out
+node_modules
 *.mod
 *.txt
 *.yaml
-*.yml
-*.json

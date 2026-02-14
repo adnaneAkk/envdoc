@@ -1,9 +1,10 @@
 package main
 
 import (
-	"envdoc/cmd"
 	"fmt"
 	"os"
+
+	"github.com/adnaneAkk/envdoc/cmd"
 )
 
 func main() {

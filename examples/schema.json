@@ -1,0 +1,17 @@
+{
+  "API_KEY": {
+    "example": "your_api_key_here",
+    "type": "string",
+    "required": false
+  },
+  "DB_PORT": {
+    "example": "5432",
+    "type": "integer",
+    "required": false
+  },
+  "DEBUG": {
+    "example": "false",
+    "type": "boolean",
+    "required": false
+  }
+}

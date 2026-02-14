@@ -2,12 +2,13 @@ package parser
 
 import (
 	"bufio"
-	"envdoc/internal/types"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/adnaneAkk/envdoc/internal/types"
 )
 
 // ParseFile parses an .env file and returns the parsed map, errors, and warnings
