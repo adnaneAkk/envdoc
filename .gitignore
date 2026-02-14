@@ -7,3 +7,6 @@ plants.txt
 *.out
 *.mod
 *.txt
+*.yaml
+*.yml
+*.json
