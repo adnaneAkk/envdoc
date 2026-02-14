@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"envdoc/internal/parser"
-	"envdoc/internal/schema"
-	"envdoc/internal/types"
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/adnaneAkk/envdoc/internal/parser"
+	"github.com/adnaneAkk/envdoc/internal/schema"
+	"github.com/adnaneAkk/envdoc/internal/types"
 
 	"github.com/spf13/cobra"
 )
