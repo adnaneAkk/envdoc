@@ -1,5 +1,5 @@
 # Ignore environment and text files
-.env
+*.env
 plants.txt
 
 # Optional: Go build files
