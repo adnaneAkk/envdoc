@@ -4,6 +4,7 @@ package types
 type Config struct {
 	Strict         bool
 	GenerateSchema bool
+	Unmask         bool
 }
 
 // Issue struct for recording issues found in .env
@@ -28,9 +29,10 @@ type EnvVar struct {
 type EnvVarMap map[string]EnvVar
 
 type SchemaItem struct {
-	Example  string `yaml:"example"`
-	Type     string `yaml:"type"`
-	Required bool   `yaml:"required"`
+	Value     string `yaml:"example"`
+	Type      string `yaml:"type"`
+	Required  bool   `yaml:"required"`
+	Sensitive bool   `yaml:"sensitive"`
 }
 type Schema map[string]SchemaItem
 

@@ -6,21 +6,29 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/adnaneAkk/envdoc/internal/secrets"
 	"github.com/adnaneAkk/envdoc/internal/types"
 
 	"gopkg.in/yaml.v3"
 )
 
 // Generate creates a schema from the parsed environment variables
-func Generate(envVarMap types.EnvVarMap) types.Schema {
+func Generate(envVarMap types.EnvVarMap, config types.Config) types.Schema {
 	schema := types.Schema{}
 
 	for key, item := range envVarMap {
 		valueType := guessValueType(item.Value)
+
+		finalValue := item.Value
+		isSensitive := secrets.IsRedacted(key, item.Value)
+		if isSensitive && !config.Unmask {
+			finalValue = "[SENSITIVE]"
+		}
 		schema[key] = types.SchemaItem{
-			Example:  item.Value,
-			Type:     valueType,
-			Required: false,
+			Value:     finalValue,
+			Type:      valueType,
+			Required:  false,
+			Sensitive: isSensitive,
 		}
 	}
 
@@ -48,9 +56,10 @@ func Output(schema types.Schema, format string) (string, error) {
 		var sb strings.Builder
 		for key, item := range schema {
 			sb.WriteString(fmt.Sprintf("%s:\n", key))
-			sb.WriteString(fmt.Sprintf("  example: %s\n", item.Example))
+			sb.WriteString(fmt.Sprintf("  example: %s\n", item.Value))
 			sb.WriteString(fmt.Sprintf("  type: %s\n", item.Type))
 			sb.WriteString(fmt.Sprintf("  required: %v\n", item.Required))
+			sb.WriteString(fmt.Sprintf("  sensitive: %v\n", item.Sensitive))
 			sb.WriteString("\n")
 		}
 		return sb.String(), nil

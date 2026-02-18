@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/adnaneAkk/envdoc/internal/parser"
+	"github.com/adnaneAkk/envdoc/internal/secrets"
 	"github.com/adnaneAkk/envdoc/internal/types"
 	"github.com/spf13/cobra"
 )
@@ -39,21 +41,33 @@ var compareCmd = &cobra.Command{
 			cmd.Usage()
 			os.Exit(1)
 		}
-
-		runCompare(e1, e2, strict)
+		unmask, _ := cmd.Flags().GetBool("unmask")
+		if unmask {
+			fmt.Fprint(os.Stderr, "⚠  This will expose sensitive values in output. Continue? [y/N]: ")
+			var response string
+			fmt.Scanln(&response)
+			response = strings.ToLower(strings.TrimSpace(response))
+			if response != "y" && response != "yes" {
+				fmt.Fprintln(os.Stderr, "Aborted.")
+				os.Exit(0)
+			}
+		}
+		runCompare(e1, e2, strict, unmask)
 	},
 }
 
 func init() {
 	compareCmd.Flags().StringVar(&envFile1, "env1", "", "First env file")
 	compareCmd.Flags().StringVar(&envFile2, "env2", "", "Second env file")
+	compareCmd.Flags().Bool("unmask", false, "unmask sensitive values in output")
 
 	rootCmd.AddCommand(compareCmd)
 }
 
-func runCompare(envfile1, envfile2 string, strictMode bool) {
+func runCompare(envfile1, envfile2 string, strictMode, unmask bool) {
 	config := types.Config{
 		Strict: strictMode,
+		Unmask: unmask,
 	}
 
 	EnvMap1, File1erors, File1warnings, err := parser.ParseFile(envfile1, config)
@@ -130,21 +144,29 @@ func runCompare(envfile1, envfile2 string, strictMode bool) {
 			)
 		}
 	}
-
 	if len(difference) == 0 {
 		fmt.Println("\n✓ Files are identical")
 	} else {
 		fmt.Printf("\n=== Comparison: %s vs %s ===\n", envfile1, envfile2)
 		for _, d := range difference {
+			sensitive := secrets.IsSensitiveKey(d.KeyName) ||
+				secrets.IsSensitiveValue(d.Value1) ||
+				secrets.IsSensitiveValue(d.Value2)
+
+			value1, value2 := d.Value1, d.Value2
+			if sensitive && !config.Unmask {
+				value1, value2 = "[SENSITIVE]", "[SENSITIVE]"
+			}
+
 			switch d.DiffType {
 			case "missing key":
 				if d.Value1 != "" {
-					fmt.Printf("  - %-20s (only in %s)\n", d.KeyName, envfile1)
+					fmt.Printf("  - %-20s = %s (only in %s)\n", d.KeyName, value1, envfile1)
 				} else {
-					fmt.Printf("  + %-20s (only in %s)\n", d.KeyName, envfile2)
+					fmt.Printf("  + %-20s = %s (only in %s)\n", d.KeyName, value2, envfile2)
 				}
 			case "difference in value":
-				fmt.Printf("  ~ %-20s %q → %q\n", d.KeyName, d.Value1, d.Value2)
+				fmt.Printf("  ~ %-20s %q → %q\n", d.KeyName, value1, value2)
 			}
 		}
 		fmt.Printf("\n%d difference(s) found\n", len(difference))

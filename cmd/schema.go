@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/adnaneAkk/envdoc/internal/parser"
 	"github.com/adnaneAkk/envdoc/internal/schema"
@@ -28,19 +29,32 @@ var schemaCmd = &cobra.Command{
 		} else {
 			envFile = ".env"
 		}
-		runSchemaGeneration(envFile, strict, outputFormat, outputFile)
+		unmask, _ := cmd.Flags().GetBool("unmask")
+		if unmask {
+			fmt.Fprint(os.Stderr, "⚠  This will expose sensitive values in output. Continue? [y/N]: ")
+			var response string
+			fmt.Scanln(&response)
+			response = strings.ToLower(strings.TrimSpace(response))
+			if response != "y" && response != "yes" {
+				fmt.Fprintln(os.Stderr, "Aborted.")
+				os.Exit(0)
+			}
+		}
+		runSchemaGeneration(envFile, strict, unmask, outputFormat, outputFile)
 	},
 }
 
 func init() {
 	schemaCmd.Flags().StringVarP(&outputFormat, "format", "f", "json", "Output format (json|yaml|text)")
 	schemaCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file (default: stdout)")
+	schemaCmd.Flags().Bool("unmask", false, "unmask sensitive values in output")
 	rootCmd.AddCommand(schemaCmd)
 }
 
-func runSchemaGeneration(filename string, strictMode bool, format string, outFile string) {
+func runSchemaGeneration(filename string, strictMode, unmask bool, format string, outFile string) {
 	config := types.Config{
 		Strict: strictMode,
+		Unmask: unmask,
 	}
 
 	// Parse the file
@@ -65,7 +79,7 @@ func runSchemaGeneration(filename string, strictMode bool, format string, outFil
 	}
 
 	// Generate schema
-	schemaData := schema.Generate(envVarMap)
+	schemaData := schema.Generate(envVarMap, config)
 
 	// Output based on format
 	output, err := schema.Output(schemaData, format)
