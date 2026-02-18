@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"envdoc/internal/parser"
-	"envdoc/internal/types"
 	"fmt"
 	"os"
+
+	"github.com/adnaneAkk/envdoc/internal/parser"
+	"github.com/adnaneAkk/envdoc/internal/types"
 
 	"github.com/spf13/cobra"
 )
@@ -42,8 +43,11 @@ func runValidation(filename string, strictMode bool) {
 		Strict: strictMode,
 	}
 
-	envVarMap, errors, warnings := parser.ParseFile(filename, config)
-
+	envVarMap, errors, warnings, err := parser.ParseFile(filename, config)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	// Print errors
 	if len(errors) > 0 {
 		fmt.Printf("Errors: %d found\n", len(errors))

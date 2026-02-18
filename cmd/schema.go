@@ -44,8 +44,11 @@ func runSchemaGeneration(filename string, strictMode bool, format string, outFil
 	}
 
 	// Parse the file
-	envVarMap, errors, warnings := parser.ParseFile(filename, config)
-
+	envVarMap, errors, warnings, err := parser.ParseFile(filename, config)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	// Print errors/warnings
 	if len(errors) > 0 {
 		fmt.Printf("Errors: %d found\n", len(errors))

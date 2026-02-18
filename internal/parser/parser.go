@@ -12,13 +12,14 @@ import (
 )
 
 // ParseFile parses an .env file and returns the parsed map, errors, and warnings
-func ParseFile(filename string, config types.Config) (types.EnvVarMap, []types.Issue, []types.Issue) {
+func ParseFile(filename string, config types.Config) (types.EnvVarMap, []types.Issue, []types.Issue, error) {
 	var errors []types.Issue
 	var warnings []types.Issue
 
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatalf("Error opening file %s: %v", filename, err)
+		// log.Fatalf("Error opening file %s: %v", filename, err)
+		return nil, nil, nil, fmt.Errorf("error opening file %s: %v", filename, err)
 	}
 	defer file.Close()
 
@@ -59,7 +60,7 @@ func ParseFile(filename string, config types.Config) (types.EnvVarMap, []types.I
 		log.Fatalf("Error reading file: %v", err)
 	}
 
-	return envVarMap, errors, warnings
+	return envVarMap, errors, warnings, nil
 }
 
 func parseLine(line string, lineNum int, cfg types.Config, errors, warnings *[]types.Issue) (string, string) {
