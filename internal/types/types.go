@@ -33,3 +33,13 @@ type SchemaItem struct {
 	Required bool   `yaml:"required"`
 }
 type Schema map[string]SchemaItem
+
+type Diff struct {
+	DiffType string
+	Message  string
+	KeyName  string //the relevant key that might be missing ?? not sure
+	Value1   string //this is incase there is a different value between two files with the same key
+	Value2   string
+}
+
+type DiffMap []Diff

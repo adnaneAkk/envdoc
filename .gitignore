@@ -9,3 +9,4 @@ node_modules
 *.mod
 *.txt
 *.yaml
+settings.json
