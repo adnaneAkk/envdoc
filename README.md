@@ -13,6 +13,9 @@ Ever deployed to production and realized you had a typo in your `.env` file? Or 
 
 ```bash
 go install github.com/adnaneAkk/envdoc@latest
+
+# if that doesnt work ,please specify by the latest version number
+go install github.com/adnaneAkk/envdoc@0.1.1
 ```
 
 Or build from source:
@@ -167,3 +170,4 @@ Use `--unmask` on any command to expose real values. When run interactively, you
 ## Contributing
 
 This is my first public Go project! Found a bug or have an idea? Open an issue or PR.
+
